@@ -1,0 +1,31 @@
+h1 {
+	font-size: 0.1em;
+}
+
+body {
+	color: #8ed2d1;
+	background-color: #0d0c0c;
+}
+
+div.logo {
+	margin-left: 7.0em;
+}
+
+div.photo {
+	margin-left: 6.0em;
+}
+
+pre {
+	margin-left: 6.0em;
+}
+
+a {
+	font-weight: bold;
+	color: #8ed2d1;
+	background-color: #0d0c0c;
+}
+
+a:hover {
+	color: #0d0c0c;
+	background-color: #8ed2d1;
+}
