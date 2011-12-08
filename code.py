@@ -20,11 +20,15 @@ class index:
 		#i = web.input(name=None)
 		#return render.index(i.name)
 		# Esco coge el nombre de la URL
-		return render.index(name)
+		return render.index()
 
 class page:
 	def GET(self, page):
-		return render.page(str(page))
+		try:
+			page = "data/" + str(page) + ".txt"
+			return render.page(page)
+		except:
+			return render.notfound()
 
 class static:
 	def GET(self, filename=None):
@@ -36,3 +40,7 @@ if __name__ == "__main__":
 	app = web.application(urls, globals())
 	app.internalerror = web.debugerror
 	app.run()
+
+
+
+

@@ -3,8 +3,12 @@ h1 {
 }
 
 body {
-	color: #8ed2d1;
-	background-color: #0d0c0c;
+	color: #3e6261;
+	/*background-color: #0d0c0c;*/
+}
+
+#page {
+	margin-left: 6.0em;
 }
 
 div.logo {
