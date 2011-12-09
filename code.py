@@ -1,15 +1,75 @@
+# -*- coding: utf-8 -*-
 import web
 import htmlize
+import os
+
+# TODO:
+# - os.path.join
+
+#DATA_DIR = "/home/marta/software/sources/pywi/data/"
+DATA_DIR = "data/"
 
 urls = (
 		'/',                'index',
+		'/favicon.ico',		'favicon',
 		'/icons/(.*)',    	'static',
 		'/static/(.*)',   	'static',
 		'/(.*)',          	'page',
 		)
 
+class favicon:
+	def GET(self):
+		return open(str("static/favicon.ico"), 'r').read()
+
+def is_page(filename, extension = 'txt'):
+	try:
+		basename, ext = filename.split('.')
+		return ext == extension
+	except ValueError:
+		return False
+
+
+#TODO TODO TODO 
+def get_menu():
+	def get_submenu(path):
+		data_dirs =  [d for d in os.listdir(path) 
+				if os.path.isdir(os.path.join(path, d))]
+		data_pages = [f for f in os.listdir(path) 
+				if is_page(os.path.join(path, f))]
+		pages = []
+		for p in data_pages:
+			pages = pages + [{'title':p, 'path':os.path.join(path,p)}]
+
+		for i in data_dirs:
+			pages = pages + [get_submenu(os.path.join(path,i))]
+		return pages
+		
+	data_pages = get_submenu(DATA_DIR)
+	return data_pages
+
+def get_menu_html():
+	def render_item(item):
+		if type(item) is list:
+			try:
+				html = "<ul>\n" + render_item(item[0]) + "</ul>\n" + render_item(item[1:])
+			except IndexError:
+				html = "<ul>\n" + render_item(item[0]) + "</ul>\n"
+			return html
+		elif type(item) is dict:
+			return ("\t<li> <a href=\"" + item['path'] + "\"> "+ 
+				item['title'] + "</a></li>\n")
+		else: # No debería ocurrir
+			return ''
+	menu = get_menu()
+	#print menu
+	html = '<div id=menu>\n' + render_item(menu) + "</div>"
+	return html
+
+	
+
 t_globals = {
 		'htmlize': htmlize.htmlize,
+		'get_menu': get_menu_html,
 }
 
 render = web.template.render('templates/', globals=t_globals)
@@ -24,11 +84,11 @@ class index:
 
 class page:
 	def GET(self, page):
-		try:
-			page = "data/" + str(page) + ".txt"
-			return render.page(page)
-		except:
-			return render.notfound()
+		#try:
+		page = "data/" + str(page) + ".txt"
+		return render.page(page)
+		#except:
+			#return render.notfound()
 
 class static:
 	def GET(self, filename=None):
@@ -40,7 +100,5 @@ if __name__ == "__main__":
 	app = web.application(urls, globals())
 	app.internalerror = web.debugerror
 	app.run()
-
-
 
 
