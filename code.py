@@ -8,6 +8,7 @@ import os
 
 #DATA_DIR = "/home/marta/software/sources/pywi/data/"
 DATA_DIR = "data/"
+EXTENSION = "txt"
 
 urls = (
 		'/',                'index',
@@ -21,7 +22,7 @@ class favicon:
 	def GET(self):
 		return open(str("static/favicon.ico"), 'r').read()
 
-def is_page(filename, extension = 'txt'):
+def is_page(filename, extension = EXTENSION):
 	try:
 		basename, ext = filename.split('.')
 		return ext == extension
@@ -30,24 +31,29 @@ def is_page(filename, extension = 'txt'):
 
 
 #TODO TODO TODO 
-def get_menu():
-	def get_submenu(path):
-		data_dirs =  [d for d in os.listdir(path) 
-				if os.path.isdir(os.path.join(path, d))]
-		data_pages = [f for f in os.listdir(path) 
-				if is_page(os.path.join(path, f))]
-		pages = []
-		for p in data_pages:
-			pages = pages + [{'title':p, 'path':os.path.join(path,p)}]
+def get_menu(path):
+	#def get_submenu(path):
+		#data_dirs =  [d for d in os.listdir(path) 
+				#if os.path.isdir(os.path.join(path, d))]
+		#data_pages = [f for f in os.listdir(path) 
+				#if is_page(os.path.join(path, f))]
+		#pages = []
+		#for p in data_pages:
+			#pages = pages + [{'title':p, 'path':os.path.join(path,p)}]
 
-		for i in data_dirs:
-			pages = pages + [get_submenu(os.path.join(path,i))]
-		return pages
+		#for i in data_dirs:
+			#pages = pages + [get_submenu(os.path.join(path,i))]
+		#return pages
 		
-	data_pages = get_submenu(DATA_DIR)
-	return data_pages
+	#data_pages = get_submenu(self.current_dir)
+	###########################################
+	# De momento sólo muestro un nivel de CATEGORÍAS
+	data_dirs = [{'title': os.path.basename(d), 'path': d} 
+				for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+	return data_dirs
 
-def get_menu_html():
+def get_menu_html(path):
+	path = os.path.dirname(path)
 	def render_item(item):
 		if type(item) is list:
 			try:
@@ -60,8 +66,8 @@ def get_menu_html():
 				item['title'] + "</a></li>\n")
 		else: # No debería ocurrir
 			return ''
-	menu = get_menu()
-	#print menu
+	menu = get_menu(path)
+	print menu
 	html = '<div id=menu>\n' + render_item(menu) + "</div>"
 	return html
 
@@ -69,7 +75,7 @@ def get_menu_html():
 
 t_globals = {
 		'htmlize': htmlize.htmlize,
-		'get_menu': get_menu_html,
+		'get_menu_html': get_menu_html,
 }
 
 render = web.template.render('templates/', globals=t_globals)
@@ -85,8 +91,13 @@ class index:
 class page:
 	def GET(self, page):
 		#try:
-		page = "data/" + str(page) + ".txt"
-		return render.page(page)
+		if os.path.isdir(os.path.join(DATA_DIR, str(page))):
+			return "DIRECTORIO " + str(page)
+		else:
+			page_path = os.path.join(DATA_DIR, str(page) + "." + EXTENSION)
+			self.current_dir = os.path.dirname(page_path)
+			self.current_page = page_path
+			return render.page(page_path)
 		#except:
 			#return render.notfound()
 
