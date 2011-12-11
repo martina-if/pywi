@@ -15,6 +15,7 @@ EXTENSION = "txt"
 
 urls = (
 		'/',                'index',
+		'/new',				'new',
 		'/favicon.ico',		'favicon',
 		'/icons/(.*)',    	'static',
 		'/static/(.*)',   	'static',
@@ -64,19 +65,19 @@ class node:
 		self.current_page['url'] = str(page_url)
 		self.current_page['title'] = os.path.basename(str(page_url))
 		self.current_page['path'] = os.path.join(DATA_DIR, self.current_page['url'])
-		if os.path.isdir(self.current_page['path']):
-		#try:
-			self.current_dir = self.current_page['path']
-			print "CURRENT: ", self.current_page
-			return render.dir(self.current_page['path'], self)
-		else:
-			self.current_dir = os.path.dirname(self.current_page['path'])
-			self.current_page['path'] = os.path.join(self.current_page['path'] + 
-					"." + EXTENSION)
-			print "CURRENT: ", self.current_page
-			return render.page(self.current_page['path'], self)
-		#except:
-			#return render.notfound()
+		try:
+			if os.path.isdir(self.current_page['path']):
+				self.current_dir = self.current_page['path']
+				print "CURRENT: ", self.current_page
+				return render.dir(self.current_page['path'], self)
+			else:
+				self.current_dir = os.path.dirname(self.current_page['path'])
+				self.current_page['path'] = os.path.join(self.current_page['path'] + 
+						"." + EXTENSION)
+				print "CURRENT: ", self.current_page
+				return render.page(self.current_page['path'], self)
+		except:
+			return render.notfound()
 
 
 	def get_menu_page(self):
@@ -111,10 +112,47 @@ class node:
 			if is_page(os.path.join(self.current_dir, f))]
 		return data_pages
 
+class new:
+	def not_page_exists(url):
+		return not (os.path.isdir(os.path.join(DATA_DIR, url)) or
+				os.path.exists(os.path.join(DATA_DIR, url + "." + EXTENSION)))
+
+	page_exists_validator = web.form.Validator('Page already exists', 
+		not_page_exists)
+
+	form = web.form.Form(
+        web.form.Textbox('url', web.form.notnull, page_exists_validator,
+            size=30,
+            description="Location:"),
+        #web.form.Textbox('title', web.form.notnull, 
+            #size=30,
+            #description="Page title:"),
+        web.form.Textarea('content', web.form.notnull, 
+            rows=30, cols=80,
+            description="Page content:", post="Use markdown syntax"),
+        web.form.Button('Create page'),
+    )
+
+	def GET(self):
+		url = web.input(url='').url
+		form = self.form()
+		form.fill({'url':url})
+		return render.new(form)
+
+	def POST(self):
+		form = self.form()
+		if not form.validates():
+			return render.new(form)
+		new_page(form.d.url, form.d.content)
+		raise web.seeother('/' + form.d.url)
+
+def new_page(url, content):
+	f = open(os.path.join(DATA_DIR, str(url) + "." + EXTENSION), 'w')
+	f.write(content.encode('utf-8'))
 
 class static:
 	def GET(self, filename=None):
-		print("KAKOTA==================== ")
+		print("Hello world ==================== ")
 		print self
 		return open(str(filename), 'r').read()
 
