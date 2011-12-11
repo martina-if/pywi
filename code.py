@@ -68,13 +68,11 @@ class node:
 		try:
 			if os.path.isdir(self.current_page['path']):
 				self.current_dir = self.current_page['path']
-				print "CURRENT: ", self.current_page
 				return render.dir(self.current_page['path'], self)
 			else:
 				self.current_dir = os.path.dirname(self.current_page['path'])
 				self.current_page['path'] = os.path.join(self.current_page['path'] + 
 						"." + EXTENSION)
-				print "CURRENT: ", self.current_page
 				return render.page(self.current_page['path'], self)
 		except:
 			return render.notfound()

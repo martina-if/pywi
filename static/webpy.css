@@ -80,6 +80,10 @@ strong {
           color: #49b237;
 }
 
+#topbuttons {
+	float: right;
+}
+
 /* Column separator */
 #container {
            background: #fff url(static/col.gif) repeat-y 140px 0;
