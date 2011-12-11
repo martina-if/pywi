@@ -10,20 +10,25 @@ $def with (page, page_obj)
 
 <body>
 
-<h1>HOLAA PÁGINA</h1>
-$# :get_menu_html(page)
-$#:get_menu_template(page) $# Escapar! si no, no se interpreta el código
-$:page_obj.get_menu_dir()
-
-<div id="container">
-	<div id="main">
-		$ pages_list = page_obj.get_pages_from_folder()
-
-		<ul>
-		$for item in pages_list:
-			<li> <a href="$item['url']">$item['title']</a> </li>
-		</ul>
+	<div id="header">
+		<h1>PyWi!</h1>
 	</div>
-</div>
+
+	<div id="location">
+		Navigation bar
+	</div>
+
+	<div id="container">
+		$:page_obj.get_menu_dir()
+
+		<div id="main">
+			$ pages_list = page_obj.get_pages_from_folder()
+
+			<ul>
+			$for item in pages_list:
+				<li> <a href="$item['url']">$item['title']</a> </li>
+			</ul>
+		</div>
+	</div>
 
 </body>
