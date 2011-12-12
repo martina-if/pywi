@@ -1,12 +1,6 @@
-$def with (page, page_obj)
+$def with (page)
 
-
-<!DOCTYPE html>
-<head>
-	<meta charset="utf-8" />
-	<title>r.untroubled.be</title>
-	<link rel="stylesheet" type="text/css" href="/static/webpy.css" />
-</head>
+$#:page.get_head()
 
 <body>
 
@@ -17,15 +11,16 @@ $def with (page, page_obj)
 	<div id="location">
 		Navigation bar
 		<div id="topbuttons">
-			<a href="/new"> New Page </a>
+			$:page.up_button()
+			<a href="/new">New Page</a>  
 		</div>
 	</div>
 
 	<div id="container">
-		$:page_obj.get_menu_dir()
+		$:page.get_menu_dir()
 
 		<div id="main">
-			$ pages_list = page_obj.get_pages_from_folder()
+			$ pages_list = page.get_pages_from_folder()
 
 			<ul>
 			$for item in pages_list:

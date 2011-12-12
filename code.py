@@ -22,27 +22,9 @@ urls = (
 		'/(.*)',          	'node',
 		)
 
-def delete_extension(filename):
-	return os.path.splitext(filename)[0]
-
 class favicon:
 	def GET(self):
 		return open(str("static/favicon.ico"), 'r').read()
-
-def is_page(filename, extension = EXTENSION):
-	try:
-		ext = filename.split('.')[-1]
-		return ext == extension
-	except ValueError:
-		return False
-
-
-def get_menu(path):
-	# De momento sólo muestro un nivel de CATEGORÍAS
-	data_dirs = [{'title': os.path.basename(d), 'path': d} 
-				for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-	return data_dirs
-
 
 t_globals = {
 		'htmlize': htmlize.htmlize,
@@ -59,24 +41,14 @@ class index:
 		# Esto coge el nombre de la URL
 		return render.index()
 
-class node:
-	def GET(self, page_url):
-		self.current_page = {}
-		self.current_page['url'] = str(page_url)
-		self.current_page['title'] = os.path.basename(str(page_url))
-		self.current_page['path'] = os.path.join(DATA_DIR, self.current_page['url'])
-		try:
-			if os.path.isdir(self.current_page['path']):
-				self.current_dir = self.current_page['path']
-				return render.dir(self.current_page['path'], self)
-			else:
-				self.current_dir = os.path.dirname(self.current_page['path'])
-				self.current_page['path'] = os.path.join(self.current_page['path'] + 
-						"." + EXTENSION)
-				return render.page(self.current_page['path'], self)
-		except:
-			return render.notfound()
 
+class wiki():
+	#def get_menu(self):
+		#path = self.current_dir
+		## De momento sólo muestro un nivel de CATEGORÍAS
+		#data_dirs = [{'title': os.path.basename(d), 'path': d} 
+					#for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+		#return data_dirs
 
 	def get_menu_page(self):
 		# De momento sólo muestro un nivel de CATEGORÍAS
@@ -110,7 +82,49 @@ class node:
 			if is_page(os.path.join(self.current_dir, f))]
 		return data_pages
 
-class new:
+	def is_page(filename, extension = EXTENSION):
+		try:
+			ext = filename.split('.')[-1]
+			return ext == extension
+		except ValueError:
+			return False
+
+	def delete_extension(filename):
+		return os.path.splitext(filename)[0]
+
+	def up_button(self):
+		return "<a href=\"/"+os.path.dirname(self.current_page['url'])+"\">Up</a>"
+
+	def new_page(self, url, content):
+		f = open(os.path.join(DATA_DIR, str(url) + "." + EXTENSION), 'w')
+		f.write(content.encode('utf-8'))
+
+	def get_head(self):
+		return render.head()
+
+class node(wiki):
+	def GET(self, page_url):
+		self.current_page = {}
+		self.current_page['url'] = str(page_url)
+		self.current_page['title'] = os.path.basename(str(page_url))
+		self.current_page['path'] = os.path.join(DATA_DIR, self.current_page['url'])
+		#try:
+		if os.path.isdir(self.current_page['path']):
+			self.current_dir = self.current_page['path']
+			html = str(render.head()) + str(render.dir(self))
+			return html
+		else:
+			self.current_dir = os.path.dirname(self.current_page['path'])
+			self.current_page['path'] = os.path.join(self.current_page['path'] + 
+					"." + EXTENSION)
+			html = str(render.head()) + str(render.page(self))
+			return html
+		#except:
+			#return render.notfound()
+
+
+
+class new(wiki):
 	def not_page_exists(url):
 		return not (os.path.isdir(os.path.join(DATA_DIR, url)) or
 				os.path.exists(os.path.join(DATA_DIR, url + "." + EXTENSION)))
@@ -141,12 +155,8 @@ class new:
 		form = self.form()
 		if not form.validates():
 			return render.new(form)
-		new_page(form.d.url, form.d.content)
+		self.new_page(form.d.url, form.d.content)
 		raise web.seeother('/' + form.d.url)
-
-def new_page(url, content):
-	f = open(os.path.join(DATA_DIR, str(url) + "." + EXTENSION), 'w')
-	f.write(content.encode('utf-8'))
 
 class static:
 	def GET(self, filename=None):

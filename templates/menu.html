@@ -1,13 +1,9 @@
 $def with (menu)
 
-$def ul(values):
-	<ul>
-	$for item in values:
-		<li> <a href="$item['url']">$item['title']</a> </li>
-	</ul>
-
-
 <div id=sidebar>
 Menú:<br>
-	$:ul(menu)
+	<ul>
+	$for item in menu:
+		<li> <a href="$item['url']">$item['title']</a> </li>
+	</ul>
 </div>
