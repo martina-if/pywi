@@ -75,13 +75,14 @@ class wiki():
 
 	def get_pages_from_folder(self):
 		data_pages = [
-					{'title': delete_extension(f), 
+					{'title': self.delete_extension(f), 
 					'path': os.path.join(self.current_dir,f),
-					'url': delete_extension(os.path.join("/", self.current_page['url'], f)),
+					'url': self.delete_extension(os.path.join("/", self.current_page['url'], f)),
 					} for f in os.listdir(self.current_dir) 
-			if is_page(os.path.join(self.current_dir, f))]
+			if self.is_page(os.path.join(self.current_dir, f))]
 		return data_pages
 
+	@staticmethod
 	def is_page(filename, extension = EXTENSION):
 		try:
 			ext = filename.split('.')[-1]
@@ -89,6 +90,7 @@ class wiki():
 		except ValueError:
 			return False
 
+	@staticmethod
 	def delete_extension(filename):
 		return os.path.splitext(filename)[0]
 
@@ -149,7 +151,7 @@ class new(wiki):
 		url = web.input(url='').url
 		form = self.form()
 		form.fill({'url':url})
-		return render.new(form)
+		return str(render.head()) + str(render.new(form))
 
 	def POST(self):
 		form = self.form()
