@@ -1,12 +1,20 @@
-$def with (form)
+$def with (page, form)
 
 $#:page.get_head()
 
 <body>
 
-	<h1>New Wiki Page</h1>
-	<form action="" method="post">
-	$:form.render()
-	</form>
+	<div id="header">
+		<h1>PyWi!</h1>
+	</div>
+
+	<div id="location">
+		Navigation bar
+	</div>
+
+	<div id="container">
+			<h1>New Wiki Page</h1>
+			$:form.render()
+	</div>
 
 </body>

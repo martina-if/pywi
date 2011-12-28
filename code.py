@@ -16,6 +16,7 @@ EXTENSION = "txt"
 urls = (
 		'/',                'index',
 		'/new',				'new',
+		'/edit/(.*)',		'edit',
 		'/favicon.ico',		'favicon',
 		'/icons/(.*)',    	'static',
 		'/static/(.*)',   	'static',
@@ -83,6 +84,14 @@ class wiki():
 		return data_pages
 
 	@staticmethod
+	def get_path_from_url(url):
+		return os.path.join(DATA_DIR, url + "." + EXTENSION)
+
+	@staticmethod
+	def get_raw_content(url):
+		return open(wiki.get_path_from_url(url), 'r').read()
+
+	@staticmethod
 	def is_page(filename, extension = EXTENSION):
 		try:
 			ext = filename.split('.')[-1]
@@ -97,8 +106,17 @@ class wiki():
 	def up_button(self):
 		return "<a href=\"/"+os.path.dirname(self.current_page['url'])+"\">Up</a>"
 
-	def new_page(self, url, content):
-		f = open(os.path.join(DATA_DIR, str(url) + "." + EXTENSION), 'w')
+	def edit_button(self):
+		return "<a href=\"/edit/"+self.current_page['url']+"\">Edit</a>"
+	
+	@staticmethod
+	def new_page(url, content):
+		f = open(wiki.get_path_from_url(str(url)), 'w')
+		f.write(content.encode('utf-8'))
+
+	@staticmethod
+	def update_page(url, content):
+		f = open(wiki.get_path_from_url(str(url)), 'w')
 		f.write(content.encode('utf-8'))
 
 	def get_head(self):
@@ -143,7 +161,7 @@ class new(wiki):
             #description="Page title:"),
         web.form.Textarea('content', web.form.notnull, 
             rows=30, cols=80,
-            description="Page content:", post="Use markdown syntax"),
+            post="Use markdown syntax"),
         web.form.Button('Create page'),
     )
 
@@ -151,12 +169,12 @@ class new(wiki):
 		url = web.input(url='').url
 		form = self.form()
 		form.fill({'url':url})
-		return str(render.head()) + str(render.new(form))
+		return str(render.head()) + str(render.new(self, form))
 
 	def POST(self):
 		form = self.form()
 		if not form.validates():
-			return render.new(form)
+			return render.new(self, form)
 		self.new_page(form.d.url, form.d.content)
 		raise web.seeother('/' + form.d.url)
 
@@ -165,6 +183,42 @@ class static:
 		print("Hello world ==================== ")
 		print self
 		return open(str(filename), 'r').read()
+
+
+
+class edit(wiki):
+
+	# TODO Usar CSS display: none; para no mostrar el nombre del campo del form
+	form = web.form.Form(
+			#web.form.Textbox('url', web.form.notnull, 
+				#size=30,
+				#description="Location:"),
+			web.form.Textarea('content', web.form.notnull, 
+				rows=30, cols=80,
+				post="Use Asciidoc syntax"),
+			web.form.Button('Update page'),
+			)
+
+	def GET(self, page_url):
+		self.current_page = {}
+		self.current_page['url'] = str(page_url)
+		self.current_page['title'] = os.path.basename(str(page_url))
+		self.current_page['path'] = os.path.join(DATA_DIR, self.current_page['url'])
+
+		content = self.get_raw_content(page_url)
+		form = self.form()
+		form.fill({'content': content})
+		return render.edit(self, form)
+
+
+	def POST(self, page_url):
+		form = self.form()
+		self.current_page = {}
+		self.current_page['content'] = self.get_raw_content(page_url)
+		if not form.validates():
+			return render.edit(self, form)
+		wiki.update_page(page_url, form.d.content)
+		raise web.seeother('/' + page_url)
 
 if __name__ == "__main__": 
 	app = web.application(urls, globals())
